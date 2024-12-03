@@ -1,48 +1,40 @@
 using UnityEngine;
 
 public class GameController : MonoBehaviour {
-
-    [SerializeField] private Enemy _prefabEnemy;
-    [SerializeField] private Vector3 _spawnPosition;
-    [SerializeField] private Vector3 _spawnOffsets;
-    [SerializeField] private float _enemySpawnInterval = 0.5f;
-    private float _enemySpawnTimer = 0.0f;
-    bool _running = true;
-
-    private Player _player;
+    public static GameController Instance { get; private set; }
+    [Header("Enemy Settings")]
+    public float enemySpawnDelay;
+    public float enemySpawnDelayDecrees;
+    public float minEnemySpawnDelay;
+    [Header("Player Settings")] 
+    public float fireInterval;
     
-    void Awake() {
+    public bool _isRunning = true;
+    private Player _player;
+    private EnemySpawner _enemySpawner;
+    
+    private void Awake() {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
         Application.targetFrameRate = 60;
     }
 
-    void Start() {
-        _player = Object.FindObjectOfType<Player>(true);
+    private void Start() {
+        _player = Player.Instance;
         _player.OnDie += OnPlayerDie;
-
-        _running = true;
+        _player.fireInterval = fireInterval;
+        _enemySpawner = EnemySpawner.Instance;
+        _enemySpawner.enemySpawnDelay = enemySpawnDelay;
+        _enemySpawner.enemySpawnDelayDecrees = enemySpawnDelayDecrees;
+        _enemySpawner.minEnemySpawnDelay = minEnemySpawnDelay;
     }
-
-    void Update() {
-        if (!_running) return;
-        _enemySpawnTimer += Time.deltaTime;
-        if ( _enemySpawnTimer >= _enemySpawnInterval ) {
-            var e = Instantiate(_prefabEnemy);
-
-            var p = _spawnPosition + new Vector3(
-                Random.Range(-_spawnOffsets.x, _spawnOffsets.x),
-                Random.Range(-_spawnOffsets.y, _spawnOffsets.y),
-                0.0f
-            );
-            e.transform.position = p;
-
-            _enemySpawnTimer -= _enemySpawnInterval;
-        }
+    private void OnPlayerDie() {
+        _isRunning = false;
     }
-
-    void OnPlayerDie() {
-        _running = false;
-
-    }
-
-
 }

@@ -123,6 +123,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _speed: 5
   _direction: {x: 0, y: 1, z: 0}
+  _lifetime: 3.5
 --- !u!96 &594580020085229029
 TrailRenderer:
   serializedVersion: 3

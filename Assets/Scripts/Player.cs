@@ -5,6 +5,7 @@ using Object = UnityEngine.Object;
 
 public class Player : MonoBehaviour {
 
+    public static Player Instance { get; private set; }
     public event System.Action OnDie;
     
     [SerializeField] private GameObject _prefabExplosion;
@@ -18,11 +19,21 @@ public class Player : MonoBehaviour {
     private Vector2 _lastInput;
     private bool _hasInput = false;
     
-    float _fireInterval = 0.4f;
+    public float fireInterval = 0.4f;
     private float _fireTimer = 0.0f;
-
+    private Vector2 playAreaMin = new Vector2(-3f, -5f); // Minimum bounds
+    private Vector2 playAreaMax = new Vector2(3f, 5f); // Maximum bounds
+    public float moveSpeed = 5f;
     private void Awake() {
         _body = GetComponent<Rigidbody>();
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
     void Start() {
@@ -32,21 +43,38 @@ public class Player : MonoBehaviour {
 
     private void Update() {
 
-        if (Input.GetMouseButtonDown(0)) _hasInput = true;
-        if (Input.GetMouseButtonUp(0)) _hasInput = false;
-        if (Input.GetMouseButton(0)) {
-            _lastInput = Input.mousePosition;
-        }
+        HandleMouseInput();
+        FireProjectile();
+    }
+    private void HandleMouseInput()
+    {
+        if (Input.GetMouseButton(0))
+        {
+            // Get mouse position and convert to world point
+            Vector3 mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10f));
 
+            // Set the target position and clamp within bounds
+            Vector3 targetPosition = new Vector3(
+                Mathf.Clamp(mousePosition.x, playAreaMin.x, playAreaMax.x),
+                Mathf.Clamp(mousePosition.y, playAreaMin.y, playAreaMax.y),
+                0
+            );
 
-        _fireTimer += Time.deltaTime;
-        if (_fireTimer >= _fireInterval) {
-
-            var go = Instantiate(_prefabProjectile);
-            go.transform.position = _projectileSpawnLocation.position;
-            _fireTimer -= _fireInterval;
+            // Smoothly move towards the target position
+            transform.position = Vector3.Lerp(transform.position, targetPosition, moveSpeed * Time.deltaTime);
         }
     }
+    private void FireProjectile()
+    {
+        _fireTimer += Time.deltaTime;
+        if (_fireTimer >= fireInterval)
+        {
+            var go = Instantiate(_prefabProjectile);
+            go.transform.position = _projectileSpawnLocation.position;
+            _fireTimer -= fireInterval;
+        }
+    }
+
 
     public void Hit() {
 
@@ -64,21 +92,21 @@ public class Player : MonoBehaviour {
         }
     }
 
-    private void FixedUpdate() {
-        if (_hasInput) {
-            Vector2 pos = _lastInput;
-            const float playAreaMin = -3f;
-            const float playAreaMax = 3f;
-
-            var p = pos.x / Screen.width;
-            _body.MovePosition(new Vector3(Mathf.Lerp(playAreaMin, playAreaMax, p), 0.0f, 0.0f));
-        }
-    }
+    // private void FixedUpdate() {
+    //     if (_hasInput) {
+    //         Vector2 pos = _lastInput;
+    //         const float playAreaMin = -3f;
+    //         const float playAreaMax = 3f;
+    //
+    //         var p = pos.x / Screen.width;
+    //         _body.MovePosition(new Vector3(Mathf.Lerp(playAreaMin, playAreaMax, p), 0.0f, 0.0f));
+    //     }
+    // }
 
     public void AddPowerUp(PowerUp.PowerUpType type) {
 
         if (type == PowerUp.PowerUpType.FIRE_RATE) {
-            _fireInterval *= 0.9f;
+            fireInterval *= 0.5f;
         }
     }
 }

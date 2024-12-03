@@ -49,7 +49,7 @@ public class Enemy : MonoBehaviour {
         if (_health <= 0) {
             var fx = Instantiate(_prefabExplosion);
             fx.transform.position = transform.position;
-            
+
             if (Random.value < _powerUpSpawnChance) {
                 var powerup = Instantiate(_prefabPowerUp);
                 var types = Enum.GetValues(typeof(PowerUp.PowerUpType)).Cast<PowerUp.PowerUpType>().ToList();

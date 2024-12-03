@@ -6,6 +6,7 @@ using UnityEngine;
 public class Projectile : MonoBehaviour {
     [SerializeField] private float _speed = 0.0f;
     [SerializeField] private Vector3 _direction = Vector3.up;
+    [SerializeField] private float _lifetime = 5.0f;
     private int _damage = 1;
 
     public void Init(int damage) {
@@ -17,6 +18,9 @@ public class Projectile : MonoBehaviour {
         var p = transform.position;
         p += _direction * (_speed * Time.deltaTime);
         transform.position = p;
+    }
+    private void Start() {
+        StartCoroutine(DestroyAfterTime());
     }
 
     private void OnTriggerEnter(Collider other) {
@@ -40,5 +44,9 @@ public class Projectile : MonoBehaviour {
         if (destroy) {
             Destroy(gameObject);
         }
+    }
+    private IEnumerator DestroyAfterTime() {
+        yield return new WaitForSeconds(_lifetime);
+        Destroy(gameObject);
     }
 }
