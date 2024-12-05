@@ -36,5 +36,14 @@ public class GameController : MonoBehaviour {
     }
     private void OnPlayerDie() {
         _isRunning = false;
+        StopCoroutine(_enemySpawner.SpawnEnemyDelay());
+        DisablePlayerInput();
+        //Optional
+        //Time.timeScale = 0f;
     }
+    private void DisablePlayerInput() {
+       
+        _player.DisableInput(); 
+    }
+    
 }

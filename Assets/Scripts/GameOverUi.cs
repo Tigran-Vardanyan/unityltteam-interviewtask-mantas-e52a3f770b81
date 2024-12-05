@@ -12,6 +12,8 @@ public class GameOverUi : MonoBehaviour {
     }
 
     public void OnRetryButton() {
+        //Optional
+        //Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 

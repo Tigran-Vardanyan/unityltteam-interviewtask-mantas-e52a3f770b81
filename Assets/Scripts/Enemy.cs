@@ -4,7 +4,8 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
-public class Enemy : MonoBehaviour {
+public class Enemy : MonoBehaviour
+{
 
     [SerializeField] private GameObject _prefabExplosion;
     [SerializeField] private PowerUp _prefabPowerUp;
@@ -18,48 +19,68 @@ public class Enemy : MonoBehaviour {
     private bool canFire = false;
     private float _fireInterval = 2.5f;
     private float _fireTimer = 0.0f;
-    
 
-    private void Awake() {
+
+    private void Awake()
+    {
         _body = GetComponent<Rigidbody>();
         canFire = Random.value < 0.4f;
         _health = 2 + Mathf.Min(Mathf.FloorToInt(Time.time / 15f), 5);
     }
 
-    void Update() {
+    void Update()
+    {
 
-        if (canFire) {
+        if (canFire)
+        {
             _fireTimer += Time.deltaTime;
-            if (_fireTimer >= _fireInterval) {
+            if (_fireTimer >= _fireInterval)
+            {
                 var go = Instantiate(_prefabProjectile);
                 go.transform.position = transform.position;
                 _fireTimer -= _fireInterval;
             }
         }
+
+        Vector3 viewportPos = Camera.main.WorldToViewportPoint(transform.position);
+        if (viewportPos.x < 0 || viewportPos.x > 1 || viewportPos.y < 0)
+        {
+            // Return the enemy to the pool if it goes out of the viewport
+            EnemySpawner.Instance.ReturnEnemyToPool(this);
+        }
     }
 
-    private void FixedUpdate() {
+    private void FixedUpdate()
+    {
         var p = _body.position;
         p += Vector3.down * (_speed * Time.deltaTime);
         _body.MovePosition(p);
     }
 
-    public void Hit(int damage) {
+    public void Hit(int damage)
+    {
         _health -= damage;
-        if (_health <= 0) {
+        if (_health <= 0)
+        {
             var fx = Instantiate(_prefabExplosion);
             fx.transform.position = transform.position;
 
-            if (Random.value < _powerUpSpawnChance) {
-                var powerup = Instantiate(_prefabPowerUp);
-                var types = Enum.GetValues(typeof(PowerUp.PowerUpType)).Cast<PowerUp.PowerUpType>().ToList();
-                powerup.SetType(types[Random.Range(0,types.Count)]);
-            }
-            
-            Destroy(gameObject);
-            Object.FindObjectOfType<GameplayUi>(true).AddScore(1);
+            if (Random.value < _powerUpSpawnChance)
+            {
+                PowerUp powerup = PowerUp.GetFromPool();
+                if (powerup != null)
+                {
+                    var types = Enum.GetValues(typeof(PowerUp.PowerUpType)).Cast<PowerUp.PowerUpType>().ToList();
+                    powerup.SetType(types[Random.Range(0, types.Count)]);
+                    powerup.transform.position = transform.position;
+                }
 
+                EnemySpawner.Instance.ReturnEnemyToPool(this);
+                Object.FindObjectOfType<GameplayUi>(true).AddScore(1);
+
+            }
         }
     }
-
 }
+
+

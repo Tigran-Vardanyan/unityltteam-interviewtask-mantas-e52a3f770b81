@@ -6,16 +6,61 @@ using UnityEngine;
 public class PowerUp : MonoBehaviour {
     private float _speed = 3.0f;
 
+    private static Queue<PowerUp> powerUpPool = new Queue<PowerUp>();
     public enum PowerUpType {
         FIRE_RATE = 0,
+        ADD_HEALTH = 1,
+        ADD_SHIELD = 2,
     }
 
     [SerializeField] private PowerUpType _type;
+    [SerializeField] private Renderer _renderer;
 
+    
+    public static void InitializePowerUpPool(int poolSize, PowerUp prefab) {
+        for (int i = 0; i < poolSize; i++) {
+            PowerUp powerUp = Instantiate(prefab);
+            powerUp.gameObject.SetActive(false);  // Deactivate initially
+            powerUpPool.Enqueue(powerUp);
+        }
+    }
+    public static PowerUp GetFromPool() {
+        if (powerUpPool.Count > 0) {
+            PowerUp powerUp = powerUpPool.Dequeue();
+            powerUp.gameObject.SetActive(true);
+            return powerUp;
+        } else {
+            // Optionally, create a new one if the pool is empty (depends on your design)
+            Debug.LogWarning("PowerUp pool is empty! Consider increasing pool size.");
+            return null;
+        }
+    }
+    public void ReturnToPool() {
+        gameObject.SetActive(false);
+        powerUpPool.Enqueue(this);
+    }
 
     public void SetType(PowerUpType type) {
         _type = type;
+        SetPowerUpColor();
     }
+    private void Start() {
+        SetPowerUpColor();
+    }
+    private void SetPowerUpColor() {
+        switch (_type) {
+            case PowerUpType.FIRE_RATE:
+                _renderer.material.color = Color.red; 
+                break;
+            case PowerUpType.ADD_HEALTH:
+                _renderer.material.color = Color.green;
+                break;
+            case PowerUpType.ADD_SHIELD:
+                _renderer.material.color = Color.blue;
+                break;
+        }
+    }
+
 
     private void Update() {
         var p = transform.position;
@@ -29,7 +74,7 @@ public class PowerUp : MonoBehaviour {
         if (player == null) return;
 
         player.AddPowerUp(_type);
-        Destroy(gameObject);
+        ReturnToPool();
 
     }
 }
