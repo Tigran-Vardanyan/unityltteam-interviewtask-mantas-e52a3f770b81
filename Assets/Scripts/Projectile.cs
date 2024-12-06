@@ -9,14 +9,19 @@ public class Projectile : MonoBehaviour {
     private int _damage = 1;
 
     private Camera _camera;
-    private float _screenEdgePadding = 1f; 
+    private float _screenEdgePadding = 1f;
+
+    // Added a field to identify the type of projectile (Player or Enemy)
+    private bool _isPlayerProjectile = false;
 
     private void Start() {
         _camera = Camera.main;
     }
 
-    public void Init(int damage) {
+    // Initialize method now takes a type to distinguish between player/enemy projectiles
+    public void Init(int damage, bool isPlayerProjectile) {
         _damage = damage;
+        _isPlayerProjectile = isPlayerProjectile;  // Set if this is a player projectile
     }
 
     void Update() {
@@ -31,9 +36,8 @@ public class Projectile : MonoBehaviour {
     }
 
     private void CheckOutOfBounds() {
-       
         Vector3 viewportPos = _camera.WorldToViewportPoint(transform.position);
-        
+
         if (viewportPos.x < -_screenEdgePadding || viewportPos.x > 1 + _screenEdgePadding ||
             viewportPos.y < -_screenEdgePadding || viewportPos.y > 1 + _screenEdgePadding) {
             ReturnToPool();
@@ -55,14 +59,15 @@ public class Projectile : MonoBehaviour {
                 destroy = true;
             }
         }
-        
+
         if (destroy) {
             ReturnToPool();
         }
     }
-
-    private void ReturnToPool() {
-        Player.Instance.ReturnProjectileToPool(this);
-    }
     
+    private void ReturnToPool() {
+        if (_isPlayerProjectile) {
+            Player.Instance.ReturnProjectileToPool(this);  // Player pool
+        }
+    }
 }

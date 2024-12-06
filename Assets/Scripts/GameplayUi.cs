@@ -9,7 +9,7 @@ public class GameplayUi : MonoBehaviour {
     [SerializeField] private TMP_Text _labelScore;
     [SerializeField] private RectTransform _health;
 
-    private int _score = 0;
+    public int _score = 0;
 
     private void Awake() {
         _labelScore.text = "0";

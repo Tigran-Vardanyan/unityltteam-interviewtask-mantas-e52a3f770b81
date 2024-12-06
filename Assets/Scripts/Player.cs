@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,16 +16,15 @@ public class Player : MonoBehaviour
     [SerializeField] private Projectile _prefabProjectile;
     [SerializeField] private Transform _projectileSpawnLocation;
     [SerializeField] private Volume globalVolume;
-    [SerializeField] private int maxHealt = 3;
+    [SerializeField] private int maxHealth = 3;
     [SerializeField] private GameObject shield;
     [SerializeField] private PowerUp _prefabPowerUp;
-    
 
     private VolumeProfile volumeProfile;
     private int _health;
     private Vector3 targetPosition;
 
-    private Rigidbody _body = null;
+    private Rigidbody _body;
     private Vector2 _lastInput;
     private bool _hasInput = false;
 
@@ -34,14 +34,18 @@ public class Player : MonoBehaviour
     private Camera _camera;
     private bool _isDead = false;
     private bool _hasShield = false;
-
-    // Object Pool Variables
     private Queue<Projectile> projectilePool = new Queue<Projectile>();
-    [SerializeField] private int poolSize = 10;  // Number of projectiles in the pool
+    
+    private GameplayUi _gameplayUi;
+    private GameOverUi _gameOverUi;
 
-    private void Awake() {
+    [SerializeField] private int poolSize = 10;
+
+    private void Awake()
+    {
         _camera = Camera.main;
         _body = GetComponent<Rigidbody>();
+        
         if (Instance == null)
         {
             Instance = this;
@@ -51,27 +55,32 @@ public class Player : MonoBehaviour
             Destroy(gameObject);
         }
 
-        // Initialize the pool
         InitializeProjectilePool();
         PowerUp.InitializePowerUpPool(10, _prefabPowerUp);
     }
 
-    void Start() {
-        Object.FindObjectOfType<GameplayUi>(true).UpdateHealth(_health);
-        Object.FindObjectOfType<GameOverUi>(true).Close();
-        _health = maxHealt;
+    void Start()
+    {
+        _gameplayUi = FindObjectOfType<GameplayUi>();
+        _gameOverUi = FindObjectOfType<GameOverUi>(true);
+        _health = maxHealth;
+        _gameplayUi.UpdateHealth(_health);
+        _gameOverUi.Close();
+
         if (globalVolume != null)
         {
             volumeProfile = globalVolume.profile;
         }
     }
 
-    private void FixedUpdate() {
+    private void FixedUpdate()
+    {
         if (!_isDead)
         {
             HandleInput();
             FireProjectile();
         }
+
         shield.SetActive(_hasShield);
     }
 
@@ -87,7 +96,6 @@ public class Player : MonoBehaviour
             Vector3 screenMin = _camera.ScreenToWorldPoint(new Vector3(3f, 0.5f, mousePosition.z));
             Vector3 screenMax = _camera.ScreenToWorldPoint(new Vector3(Screen.width - 3f, Screen.height - 0.5f, mousePosition.z));
 
-            // Clamp player position
             targetPosition = new Vector3(
                 Mathf.Clamp(targetPosition.x, screenMin.x, screenMax.x),
                 Mathf.Clamp(targetPosition.y, screenMin.y, screenMax.y),
@@ -97,11 +105,9 @@ public class Player : MonoBehaviour
 
             if (distance > 0.01f)
             {
-                // Move player
                 Vector3 newPosition = Vector3.Lerp(transform.position, targetPosition, moveSpeed * Time.deltaTime);
                 transform.position = newPosition;
 
-                // Rotate player
                 float normalizedDistance = Mathf.Clamp01(distance / moveSpeed);
                 float targetRotationY = Mathf.Lerp(0, targetPosition.x > transform.position.x ? -20 : 20, normalizedDistance);
                 transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0, targetRotationY, 0), Time.deltaTime * 5f);
@@ -134,9 +140,7 @@ public class Player : MonoBehaviour
         }
         else
         {
-            // If pool is empty, instantiate a new projectile (optional, depending on game design)
-            Projectile projectile = Instantiate(_prefabProjectile);
-            return projectile;
+            return Instantiate(_prefabProjectile);
         }
     }
 
@@ -151,7 +155,7 @@ public class Player : MonoBehaviour
         for (int i = 0; i < poolSize; i++)
         {
             Projectile projectile = Instantiate(_prefabProjectile);
-            projectile.gameObject.SetActive(false);  // Deactivate on creation
+            projectile.gameObject.SetActive(false);
             projectilePool.Enqueue(projectile);
         }
     }
@@ -159,16 +163,30 @@ public class Player : MonoBehaviour
     public void Hit()
     {
         if (_isDead) return;
-        if (_hasShield) {
-            // Shield absorbs damage
-            _hasShield = false; // Shield is used up
+
+        if (_hasShield)
+        {
+            _hasShield = false;
         }
-        else {
+        else
+        {
             _health--;
-            Object.FindObjectOfType<GameplayUi>(true).UpdateHealth(_health);
+            if (volumeProfile.TryGet<AnalogGlitchVolume>(out var analogGlitch))
+            {
+                StartCoroutine(AnimateGlitchParameters(analogGlitch, 0.6f));
+            }
+
+            if (volumeProfile.TryGet<DigitalGlitchVolume>(out var digitalGlitch))
+            {
+                StartCoroutine(AnimateGlitchParameters(digitalGlitch, 0.4f));
+            }
+
+            _gameplayUi.UpdateHealth(_health);
+
             if (_health <= 0)
             {
-                Object.FindObjectOfType<GameOverUi>(true).Open();
+                _gameplayUi.gameObject.SetActive(false);
+                _gameOverUi.Open(_gameplayUi._score);
                 var fx = Instantiate(_prefabExplosion);
                 fx.transform.position = transform.position;
                 Destroy(gameObject);
@@ -185,28 +203,32 @@ public class Player : MonoBehaviour
     public void AddPowerUp(PowerUp.PowerUpType type)
     {
         if (_isDead) return;
+
         switch (type)
         {
             case PowerUp.PowerUpType.FIRE_RATE:
                 fireInterval *= 0.5f;
                 break;
+
             case PowerUp.PowerUpType.ADD_HEALTH:
-                if (_health<maxHealt)
+                if (_health < maxHealth)
                 {
-                      _health++; 
-                      Object.FindObjectOfType<GameplayUi>(true).UpdateHealth(_health);
+                    _health++;
+                    Object.FindObjectOfType<GameplayUi>(true).UpdateHealth(_health);
                 }
                 break;
+
             case PowerUp.PowerUpType.ADD_SHIELD:
-                _hasShield = true; // Activate shield
+                _hasShield = true;
                 StartCoroutine(ShieldEffect());
                 break;
         }
     }
-    
-    private IEnumerator ShieldEffect() {
+
+    private IEnumerator ShieldEffect()
+    {
         yield return new WaitForSeconds(5f);
-        _hasShield = false; 
+        _hasShield = false;
     }
 
     private IEnumerator AnimateGlitchParameters(AnalogGlitchVolume analogGlitch, float duration)
@@ -215,7 +237,6 @@ public class Player : MonoBehaviour
         float halfDuration = duration / 2f;
         float maxIntensity = 0.8f;
 
-        // Animate to max intensity
         while (elapsedTime < halfDuration)
         {
             float currentIntensity = Mathf.Lerp(0f, maxIntensity, elapsedTime / halfDuration);
@@ -228,7 +249,6 @@ public class Player : MonoBehaviour
 
         elapsedTime = 0f;
 
-        // Animate back to zero intensity
         while (elapsedTime < halfDuration)
         {
             float currentIntensity = Mathf.Lerp(maxIntensity, 0f, elapsedTime / halfDuration);
@@ -239,7 +259,6 @@ public class Player : MonoBehaviour
             yield return null;
         }
 
-        // Ensure parameters are reset to 0
         analogGlitch.scanLineJitter.Override(0f);
         analogGlitch.horizontalShake.Override(0f);
         analogGlitch.colorDrift.Override(0f);
@@ -270,5 +289,15 @@ public class Player : MonoBehaviour
         }
 
         digitalGlitch.intensity.Override(0f);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Enemy"))
+        {
+            Hit();
+            Enemy enemy = collision.transform.GetComponent<Enemy>();
+            enemy.Hit(enemy._health);
+        }
     }
 }

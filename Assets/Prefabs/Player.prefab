@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 8188727779393496210}
   m_Layer: 6
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -54,7 +54,7 @@ MonoBehaviour:
     type: 3}
   _projectileSpawnLocation: {fileID: 8914618954283462440}
   globalVolume: {fileID: 0}
-  maxHealt: 3
+  maxHealth: 3
   shield: {fileID: 4796814119692146172}
   _prefabPowerUp: {fileID: 3322102763667225299, guid: 195424833b2e94e4caa204a418379bf2,
     type: 3}
@@ -98,7 +98,7 @@ SphereCollider:
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 128
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0

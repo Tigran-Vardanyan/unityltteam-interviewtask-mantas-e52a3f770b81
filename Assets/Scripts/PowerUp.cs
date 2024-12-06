@@ -24,15 +24,16 @@ public class PowerUp : MonoBehaviour {
             powerUpPool.Enqueue(powerUp);
         }
     }
-    public static PowerUp GetFromPool() {
+    public static PowerUp GetFromPool(GameObject prefab) {
         if (powerUpPool.Count > 0) {
             PowerUp powerUp = powerUpPool.Dequeue();
             powerUp.gameObject.SetActive(true);
             return powerUp;
-        } else {
-            // Optionally, create a new one if the pool is empty (depends on your design)
-            Debug.LogWarning("PowerUp pool is empty! Consider increasing pool size.");
-            return null;
+        } else
+        {
+            var pref = Instantiate(prefab);
+            PowerUp powerUp = pref.GetComponent<PowerUp>();
+            return powerUp;
         }
     }
     public void ReturnToPool() {

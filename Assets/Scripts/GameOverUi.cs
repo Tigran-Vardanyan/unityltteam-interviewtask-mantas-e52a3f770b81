@@ -1,10 +1,14 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class GameOverUi : MonoBehaviour {
+public class GameOverUi : MonoBehaviour
+{
 
-    public void Open() {
+    public TextMeshProUGUI Points; 
+    public void Open(int points) {
         gameObject.SetActive(true);
+        Points.text = points.ToString() + " points";
     }
 
     public void Close() {

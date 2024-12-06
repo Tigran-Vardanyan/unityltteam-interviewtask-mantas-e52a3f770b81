@@ -6,26 +6,29 @@ using Random = UnityEngine.Random;
 
 public class Enemy : MonoBehaviour
 {
+    public GameObject _prefabPowerUp;
 
     [SerializeField] private GameObject _prefabExplosion;
-    [SerializeField] private PowerUp _prefabPowerUp;
     [SerializeField] private Projectile _prefabProjectile;
+    
 
     private float _powerUpSpawnChance = 0.1f;
-    private int _health = 2;
+    public int _health = 2;
     private float _speed = 2.0f;
     private Rigidbody _body;
 
     private bool canFire = false;
     private float _fireInterval = 2.5f;
     private float _fireTimer = 0.0f;
+    private float elapsedGameTime;
 
 
     private void Awake()
     {
         _body = GetComponent<Rigidbody>();
         canFire = Random.value < 0.4f;
-        _health = 2 + Mathf.Min(Mathf.FloorToInt(Time.time / 15f), 5);
+        CalculateHealth();
+        elapsedGameTime = Time.time;
     }
 
     void Update()
@@ -67,19 +70,22 @@ public class Enemy : MonoBehaviour
 
             if (Random.value < _powerUpSpawnChance)
             {
-                PowerUp powerup = PowerUp.GetFromPool();
+                PowerUp powerup = PowerUp.GetFromPool(_prefabPowerUp);
                 if (powerup != null)
                 {
                     var types = Enum.GetValues(typeof(PowerUp.PowerUpType)).Cast<PowerUp.PowerUpType>().ToList();
                     powerup.SetType(types[Random.Range(0, types.Count)]);
                     powerup.transform.position = transform.position;
                 }
-
-                EnemySpawner.Instance.ReturnEnemyToPool(this);
-                Object.FindObjectOfType<GameplayUi>(true).AddScore(1);
-
             }
+
+            EnemySpawner.Instance.ReturnEnemyToPool(this);
+            Object.FindObjectOfType<GameplayUi>(true).AddScore(1);
         }
+    }
+    private void CalculateHealth()
+    {
+        _health = 2 + Mathf.Min(Mathf.FloorToInt( (Time.time - elapsedGameTime) / 15f), 5);
     }
 }
 

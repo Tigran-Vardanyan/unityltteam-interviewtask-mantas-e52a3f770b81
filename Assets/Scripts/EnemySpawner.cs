@@ -74,18 +74,17 @@ public class EnemySpawner : MonoBehaviour
 
     private Enemy GetEnemyFromPool()
     {
+        Enemy enemy;
         if (enemyPool.Count > 0)
         {
-            
-            Enemy enemy = enemyPool.Dequeue();
-            return enemy;
+            enemy = enemyPool.Dequeue();
         }
         else
         {
-            
-            Enemy enemy = Instantiate(prefabEnemy);
+            enemy = Instantiate(prefabEnemy);
             return enemy;
         }
+        return enemy;
     }
 
     public void ReturnEnemyToPool(Enemy enemy)
