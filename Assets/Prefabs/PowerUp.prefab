@@ -4930,8 +4930,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b06082c89c628a4ba8dc611dcb8cadc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _type: 0
-  _renderer: {fileID: 275057011681999777}
+  speed: 3
+  renderer: {fileID: 275057011681999777}
 --- !u!1 &8332958044929892322
 GameObject:
   m_ObjectHideFlags: 0

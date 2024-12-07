@@ -218,6 +218,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 21586247}
   m_CullTransparentMesh: 1
+--- !u!114 &23626580 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 997546903522773956, guid: 04d252d49c3440d49b00125d8c1e2a29,
+    type: 3}
+  m_PrefabInstance: {fileID: 4035782264841159321}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2500da5480f21a64cb558d88e3420fc0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &283573744
 GameObject:
   m_ObjectHideFlags: 0
@@ -1098,11 +1110,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdda4cd122dcbf947b3f42844669f77c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemySpawnDelay: 3
-  enemySpawnDelayDecrees: 0.1
-  minEnemySpawnDelay: 0.5
   prefabEnemy: {fileID: 7544558003137155504, guid: 854fb8ff7df935246836796a925acff7,
     type: 3}
+  spawnPoints:
+  - {fileID: 646658327}
+  spawnInterval: 3
   poolSize: 10
 --- !u!4 &646658327
 Transform:
@@ -1113,7 +1125,7 @@ Transform:
   m_GameObject: {fileID: 646658324}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 16.65, z: 0}
+  m_LocalPosition: {x: 0, y: 16, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1262,11 +1274,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd47d8a020130bb458f7cefab2488e10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemySpawnDelay: 3
-  enemySpawnDelayDecrees: 0.02
-  minEnemySpawnDelay: 1
-  fireInterval: 1
-  _isRunning: 1
+  player: {fileID: 23626580}
+  enemySpawner: {fileID: 646658326}
+  _gameplayUi: {fileID: 1822613249}
+  _gameOverUi: {fileID: 2007107364}
 --- !u!4 &980488642
 Transform:
   m_ObjectHideFlags: 0
@@ -1802,6 +1813,12 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1312890844}
   m_CullTransparentMesh: 1
+--- !u!4 &1366128876 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7561589359967119087, guid: 04d252d49c3440d49b00125d8c1e2a29,
+    type: 3}
+  m_PrefabInstance: {fileID: 4035782264841159321}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1369140099
 GameObject:
   m_ObjectHideFlags: 0
@@ -2472,14 +2489,25 @@ PrefabInstance:
       propertyPath: globalVolume
       value: 
       objectReference: {fileID: 823730657}
+    - target: {fileID: 997546903522773956, guid: 04d252d49c3440d49b00125d8c1e2a29,
+        type: 3}
+      propertyPath: playerDamage
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 997546903522773956, guid: 04d252d49c3440d49b00125d8c1e2a29,
+        type: 3}
+      propertyPath: prefabProjectile
+      value: 
+      objectReference: {fileID: 177452054660736933, guid: 4e9b0c775b3565f4cb2ec3ed48ebcfad,
+        type: 3}
+    - target: {fileID: 997546903522773956, guid: 04d252d49c3440d49b00125d8c1e2a29,
+        type: 3}
+      propertyPath: projectileSpawnPoint
+      value: 
+      objectReference: {fileID: 1366128876}
     - target: {fileID: 1090924019326213141, guid: 04d252d49c3440d49b00125d8c1e2a29,
         type: 3}
       propertyPath: m_Name
-      value: Player
-      objectReference: {fileID: 0}
-    - target: {fileID: 1090924019326213141, guid: 04d252d49c3440d49b00125d8c1e2a29,
-        type: 3}
-      propertyPath: m_TagString
       value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 3423809755499095734, guid: 04d252d49c3440d49b00125d8c1e2a29,
@@ -2531,11 +2559,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8188727779393496210, guid: 04d252d49c3440d49b00125d8c1e2a29,
-        type: 3}
-      propertyPath: m_IncludeLayers.m_Bits
-      value: 128
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

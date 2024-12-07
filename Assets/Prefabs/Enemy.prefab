@@ -107,13 +107,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efb2e20212d15094583a889e1f3367da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _prefabPowerUp: {fileID: 5739546006976547901, guid: 195424833b2e94e4caa204a418379bf2,
+  prefabPowerUp: {fileID: 5739546006976547901, guid: 195424833b2e94e4caa204a418379bf2,
     type: 3}
-  _prefabExplosion: {fileID: 7302861985510318563, guid: b9fe2c8d722fc9841a6db269ef3f3d04,
+  prefabExplosion: {fileID: 7302861985510318563, guid: b9fe2c8d722fc9841a6db269ef3f3d04,
     type: 3}
-  _prefabProjectile: {fileID: 177452054660736933, guid: 1dd0ab6fc9ba1d746999bdd9187ab64b,
+  prefabProjectile: {fileID: 177452054660736933, guid: 1dd0ab6fc9ba1d746999bdd9187ab64b,
     type: 3}
-  _health: 2
+  speed: 2
+  baseHealth: 2
+  healthIncreaseInterval: 15
+  fireChance: 0.4
+  fireInterval: 2.5
+  powerUpSpawnChance: 0.1
+  enemyDamage: 1
+  health: 0
+  levelTime: 0
 --- !u!65 &3738738063419362240
 BoxCollider:
   m_ObjectHideFlags: 0

@@ -1,92 +1,113 @@
 using System;
 using System.Linq;
 using UnityEngine;
-using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
 public class Enemy : MonoBehaviour
 {
-    public GameObject _prefabPowerUp;
+    [Header("Enemy Settings")]
+    [SerializeField] private GameObject prefabPowerUp;
+    [SerializeField] private GameObject prefabExplosion;
+    [SerializeField] private Projectile prefabProjectile;
+    [SerializeField] private float speed = 2.0f;
+    [SerializeField] private int baseHealth = 2;
+    [SerializeField] private float healthIncreaseInterval = 15f;
+    [SerializeField] private float fireChance = 0.4f;
+    [SerializeField] private float fireInterval = 2.5f;
+    [SerializeField] private float powerUpSpawnChance = 0.1f;
+    [SerializeField] private int enemyDamage;
 
-    [SerializeField] private GameObject _prefabExplosion;
-    [SerializeField] private Projectile _prefabProjectile;
-    
-
-    private float _powerUpSpawnChance = 0.1f;
-    public int _health = 2;
-    private float _speed = 2.0f;
-    private Rigidbody _body;
-
-    private bool canFire = false;
-    private float _fireInterval = 2.5f;
-    private float _fireTimer = 0.0f;
-    private float elapsedGameTime;
-
+    private Rigidbody body;
+    public int health;
+    private bool canFire;
+    private float fireTimer;
 
     private void Awake()
     {
-        _body = GetComponent<Rigidbody>();
-        canFire = Random.value < 0.4f;
-        CalculateHealth();
-        elapsedGameTime = Time.time;
+        body = GetComponent<Rigidbody>();
+        ResetEnemy();
+       
     }
 
-    void Update()
+    private void Update()
     {
-
-        if (canFire)
-        {
-            _fireTimer += Time.deltaTime;
-            if (_fireTimer >= _fireInterval)
-            {
-                var go = Instantiate(_prefabProjectile);
-                go.transform.position = transform.position;
-                _fireTimer -= _fireInterval;
-            }
-        }
-
-        Vector3 viewportPos = Camera.main.WorldToViewportPoint(transform.position);
-        if (viewportPos.x < 0 || viewportPos.x > 1 || viewportPos.y < 0)
-        {
-            // Return the enemy to the pool if it goes out of the viewport
-            EnemySpawner.Instance.ReturnEnemyToPool(this);
-        }
+        HandleFiring();
+        CheckOutOfViewport();
     }
 
     private void FixedUpdate()
     {
-        var p = _body.position;
-        p += Vector3.down * (_speed * Time.deltaTime);
-        _body.MovePosition(p);
+        MoveEnemy();
+    }
+
+    public void ResetEnemy()
+    {
+        body.velocity = Vector3.zero;
+        body.angularVelocity = Vector3.zero;
+        transform.rotation = Quaternion.Euler(Vector3.zero);
+        health = baseHealth + Mathf.Min(Mathf.FloorToInt(Time.timeSinceLevelLoad/ healthIncreaseInterval), 5);
+        canFire = Random.value < fireChance;
+        fireTimer = 0;
+    }
+
+    private void HandleFiring()
+    {
+        if (canFire)
+        {
+            fireTimer += Time.deltaTime;
+            if (fireTimer >= fireInterval)
+            {
+                var projectile = Projectile.GetFromPool(prefabProjectile.gameObject,false);
+                projectile.Init(false,enemyDamage); // Enemy projectile
+                projectile.transform.position = transform.position;
+                fireTimer -= fireInterval;
+            }
+        }
+    }
+
+    private void CheckOutOfViewport()
+    {
+        Vector3 viewportPos = Camera.main.WorldToViewportPoint(transform.position);
+        if (viewportPos.x < 0 || viewportPos.x > 1 || viewportPos.y < 0)
+        {
+            EnemySpawner.Instance.ReturnEnemyToPool(this);
+        }
+    }
+
+    private void MoveEnemy()
+    {
+        var position = body.position;
+        position += Vector3.down * (speed * Time.deltaTime);
+        body.MovePosition(position);
     }
 
     public void Hit(int damage)
     {
-        _health -= damage;
-        if (_health <= 0)
+        health -= damage;
+        if (health <= 0)
         {
-            var fx = Instantiate(_prefabExplosion);
-            fx.transform.position = transform.position;
-
-            if (Random.value < _powerUpSpawnChance)
-            {
-                PowerUp powerup = PowerUp.GetFromPool(_prefabPowerUp);
-                if (powerup != null)
-                {
-                    var types = Enum.GetValues(typeof(PowerUp.PowerUpType)).Cast<PowerUp.PowerUpType>().ToList();
-                    powerup.SetType(types[Random.Range(0, types.Count)]);
-                    powerup.transform.position = transform.position;
-                }
-            }
-
-            EnemySpawner.Instance.ReturnEnemyToPool(this);
-            Object.FindObjectOfType<GameplayUi>(true).AddScore(1);
+            GameController.Instance.AddScore(1);
+            Explode();
         }
     }
-    private void CalculateHealth()
+
+    private void Explode()
     {
-        _health = 2 + Mathf.Min(Mathf.FloorToInt( (Time.time - elapsedGameTime) / 15f), 5);
+        var explosion = Instantiate(prefabExplosion);
+        explosion.transform.position = transform.position;
+
+        if (Random.value < powerUpSpawnChance)
+        {
+            var powerUp = PowerUp.GetFromPool(prefabPowerUp);
+            if (powerUp != null)
+            {
+                var types = Enum.GetValues(typeof(PowerUp.PowerUpType)).Cast<PowerUp.PowerUpType>().ToList();
+                powerUp.SetType(types[Random.Range(0, types.Count)]);
+                powerUp.transform.position = transform.position;
+            }
+        }
+
+        EnemySpawner.Instance.ReturnEnemyToPool(this);
+        FindObjectOfType<GameplayUi>(true)?.AddScore(1);
     }
 }
-
-

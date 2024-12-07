@@ -48,19 +48,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2500da5480f21a64cb558d88e3420fc0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _prefabExplosion: {fileID: 7302861985510318563, guid: b9fe2c8d722fc9841a6db269ef3f3d04,
-    type: 3}
-  _prefabProjectile: {fileID: 177452054660736933, guid: 4e9b0c775b3565f4cb2ec3ed48ebcfad,
-    type: 3}
-  _projectileSpawnLocation: {fileID: 8914618954283462440}
-  globalVolume: {fileID: 0}
+  speed: 5
   maxHealth: 3
-  shield: {fileID: 4796814119692146172}
-  _prefabPowerUp: {fileID: 3322102763667225299, guid: 195424833b2e94e4caa204a418379bf2,
+  prefabProjectile: {fileID: 177452054660736933, guid: 4e9b0c775b3565f4cb2ec3ed48ebcfad,
     type: 3}
-  fireInterval: 1
-  moveSpeed: 10
-  poolSize: 10
+  projectileSpawnPoint: {fileID: 7561589359967119087}
+  fireRate: 0.5
+  shield: {fileID: 4796814119692146172}
+  globalVolume: {fileID: 0}
+  currentHealth: 0
 --- !u!54 &3346286131653351727
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -389,6 +385,12 @@ PrefabInstance:
 --- !u!4 &2427973104207411749 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 18ce4fa0dbc0dff499b916dd1da3a58e,
+    type: 3}
+  m_PrefabInstance: {fileID: 2754898753033952718}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &7561589359967119087 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5677760004648074017, guid: 18ce4fa0dbc0dff499b916dd1da3a58e,
     type: 3}
   m_PrefabInstance: {fileID: 2754898753033952718}
   m_PrefabAsset: {fileID: 0}
